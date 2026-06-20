@@ -47,6 +47,10 @@ jobs:
       - name: Build release exe
         run: cargo build -p collector-windows --release
 
+      - name: Verify Windows collector exe
+        shell: pwsh
+        run: ./scripts/verify-windows-collector.ps1 -ExePath target\release\collector-windows.exe -ReportDir dist
+
       - name: Package release assets
         shell: pwsh
         run: |
@@ -69,6 +73,9 @@ jobs:
           name: race-agent-collector-windows
           path: |
             dist/*.zip
+            dist/*.manifest
+            dist/*.sha256
+            dist/collector-windows-*.txt
             dist/SHA256SUMS.txt
 
       - name: Upload assets to GitHub release
