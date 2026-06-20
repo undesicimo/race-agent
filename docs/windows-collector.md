@@ -2,6 +2,11 @@
 
 The Windows collector should ship as a normal `.exe` that lives in the system tray and only opens a tiny settings window when needed.
 
+## Supported Windows Versions
+
+The supported client floor is Windows 10 x64. Windows 11 x64 is supported.
+Older Windows versions are not targeted.
+
 ## UX Shape
 
 On launch:

@@ -109,6 +109,12 @@ if (-not $IsWindows) {
   throw "This verifier must run on Windows because it uses Windows SDK and PE inspection tools."
 }
 
+$os = Get-CimInstance -ClassName Win32_OperatingSystem
+$osVersion = [version]$os.Version
+if ($osVersion.Major -lt 10) {
+  throw "Unsupported Windows version for verification: $($os.Caption) $($os.Version). Windows 10 or newer is required."
+}
+
 $resolvedExe = Resolve-Path -LiteralPath $ExePath -ErrorAction Stop
 $exe = $resolvedExe.Path
 $exeItem = Get-Item -LiteralPath $exe
@@ -123,6 +129,11 @@ if ($exeItem.Length -le 0) {
 }
 Write-Host "Path: $exe"
 Write-Host "Size: $($exeItem.Length) bytes"
+
+Write-Section "Windows host"
+Write-Host "Caption: $($os.Caption)"
+Write-Host "Version: $($os.Version)"
+Write-Host "Build: $($os.BuildNumber)"
 
 Write-Section "Loader smoke test"
 Invoke-ExeSmokeTest -FilePath $exe
@@ -168,7 +179,11 @@ if ($manifestText -notmatch "Microsoft\.Windows\.Common-Controls") {
 if ($manifestText -notmatch 'version="6\.0\.0\.0"') {
   throw "Embedded manifest does not request Common Controls v6."
 }
+if ($manifestText -notmatch "8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a") {
+  throw "Embedded manifest does not declare Windows 10/11 compatibility."
+}
 Write-Host "Common Controls v6 manifest dependency found."
+Write-Host "Windows 10/11 compatibility declaration found."
 
 Write-Section "Dependencies"
 $dumpbin = Find-DumpBin
@@ -217,10 +232,14 @@ $report = @(
   "Race Agent Windows collector integrity report"
   "Generated: $(Get-Date -Format o)"
   "Executable: $exe"
+  "VerifierWindowsCaption: $($os.Caption)"
+  "VerifierWindowsVersion: $($os.Version)"
+  "VerifierWindowsBuild: $($os.BuildNumber)"
   "SizeBytes: $($exeItem.Length)"
   "SHA256: $($hash.Hash)"
   "AuthenticodeStatus: $($signature.Status)"
   "CommonControlsV6Manifest: present"
+  "Windows10CompatibilityManifest: present"
   "COMCTL32Dependency: present"
   "GetWindowSubclassImport: $subclassImport"
   "AppLocalDllCount: $($appLocalDlls.Count)"
