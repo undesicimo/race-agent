@@ -8,7 +8,9 @@
 //! ACC's own Win32 SDK headers declare.
 
 use chrono::Utc;
-use telemetry_core::{BrakeSet, FuelInfo, SessionInfo, Sim, TelemetryFrame, TyreSet, TyreState, VehicleInfo};
+use telemetry_core::{
+    BrakeSet, FuelInfo, SessionInfo, Sim, TelemetryFrame, TyreSet, TyreState, VehicleInfo,
+};
 use thiserror::Error;
 
 // ── Error type ────────────────────────────────────────────────────────────────
@@ -268,9 +270,10 @@ pub struct PageFileStatic {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /// Decode a null-terminated UTF-16 LE string from an ACC page field.
+#[cfg_attr(not(windows), allow(dead_code))]
 fn decode_utf16(data: &[u16]) -> String {
     let end = data.iter().position(|&c| c == 0).unwrap_or(data.len());
-    String::from_utf16_lossy(&data[..end]).into_owned()
+    String::from_utf16_lossy(&data[..end])
 }
 
 // ── Decoded frame ─────────────────────────────────────────────────────────────
@@ -333,10 +336,18 @@ impl AccFrame {
             timestamp: Utc::now(),
             session: Some(SessionInfo {
                 id: None,
-                track: if self.track_name.is_empty() { None } else { Some(self.track_name) },
+                track: if self.track_name.is_empty() {
+                    None
+                } else {
+                    Some(self.track_name)
+                },
             }),
             vehicle: Some(VehicleInfo {
-                model: if self.car_model.is_empty() { None } else { Some(self.car_model) },
+                model: if self.car_model.is_empty() {
+                    None
+                } else {
+                    Some(self.car_model)
+                },
             }),
             speed_kph: Some(self.speed_kph),
             rpm: Some(self.rpm),
@@ -359,7 +370,9 @@ impl AccFrame {
                 rear_left_temperature_c: Some(self.brake_temp_c[2]),
                 rear_right_temperature_c: Some(self.brake_temp_c[3]),
             }),
-            fuel: Some(FuelInfo { liters: Some(fuel_liters) }),
+            fuel: Some(FuelInfo {
+                liters: Some(fuel_liters),
+            }),
             flags,
         }
     }
@@ -390,21 +403,33 @@ impl AccSharedMemory {
 
 #[cfg(windows)]
 mod platform {
-    use super::{AccFrame, AccSharedMemoryError, PageFileGraphics, PageFilePhysics, PageFileStatic, decode_utf16};
-    use std::ffi::c_void;
+    use super::{
+        decode_utf16, AccFrame, AccSharedMemoryError, PageFileGraphics, PageFilePhysics,
+        PageFileStatic,
+    };
     use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, INVALID_HANDLE_VALUE};
-    use windows_sys::Win32::System::Memory::{FILE_MAP_READ, MapViewOfFile, OpenFileMappingA, UnmapViewOfFile};
+    use windows_sys::Win32::System::Memory::{
+        MapViewOfFile, OpenFileMappingA, UnmapViewOfFile, FILE_MAP_READ, MEMORY_MAPPED_VIEW_ADDRESS,
+    };
 
     struct SafeHandle(HANDLE);
     impl Drop for SafeHandle {
-        fn drop(&mut self) { unsafe { CloseHandle(self.0); } }
+        fn drop(&mut self) {
+            unsafe {
+                CloseHandle(self.0);
+            }
+        }
     }
 
-    struct SafeView(*const c_void);
+    struct SafeView(MEMORY_MAPPED_VIEW_ADDRESS);
     unsafe impl Send for SafeView {}
     unsafe impl Sync for SafeView {}
     impl Drop for SafeView {
-        fn drop(&mut self) { unsafe { UnmapViewOfFile(self.0); } }
+        fn drop(&mut self) {
+            unsafe {
+                UnmapViewOfFile(self.0);
+            }
+        }
     }
 
     struct Mapping {
@@ -415,21 +440,28 @@ mod platform {
     impl Mapping {
         fn open(name: &[u8]) -> Result<Self, AccSharedMemoryError> {
             let handle: HANDLE = unsafe { OpenFileMappingA(FILE_MAP_READ, 0, name.as_ptr()) };
-            if handle == 0 || handle == INVALID_HANDLE_VALUE {
-                return Err(AccSharedMemoryError::Unavailable("OpenFileMappingA failed – is ACC running?"));
+            if handle.is_null() || handle == INVALID_HANDLE_VALUE {
+                return Err(AccSharedMemoryError::Unavailable(
+                    "OpenFileMappingA failed – is ACC running?",
+                ));
             }
             let view = unsafe { MapViewOfFile(handle, FILE_MAP_READ, 0, 0, 0) };
-            if view.is_null() {
-                unsafe { CloseHandle(handle); }
+            if view.Value.is_null() {
+                unsafe {
+                    CloseHandle(handle);
+                }
                 return Err(AccSharedMemoryError::Unavailable("MapViewOfFile failed"));
             }
-            Ok(Self { _handle: SafeHandle(handle), view: SafeView(view) })
+            Ok(Self {
+                _handle: SafeHandle(handle),
+                view: SafeView(view),
+            })
         }
 
         /// Copy the mapped region into `T` using an unaligned read.
         #[inline]
         unsafe fn read_copy<T: Copy>(&self) -> T {
-            std::ptr::read_unaligned(self.view.0 as *const T)
+            std::ptr::read_unaligned(self.view.0.Value as *const T)
         }
     }
 
@@ -442,15 +474,21 @@ mod platform {
     }
 
     pub fn connect() -> Result<super::AccSharedMemory, AccSharedMemoryError> {
-        let physics     = Mapping::open(b"Local\\acpmf_physics\0")?;
-        let graphics    = Mapping::open(b"Local\\acpmf_graphics\0")?;
+        let physics = Mapping::open(b"Local\\acpmf_physics\0")?;
+        let graphics = Mapping::open(b"Local\\acpmf_graphics\0")?;
         let static_data = Mapping::open(b"Local\\acpmf_static\0")?;
 
         let page_static: PageFileStatic = unsafe { static_data.read_copy() };
-        let car_model  = decode_utf16(&page_static.car_model);
+        let car_model = decode_utf16(&page_static.car_model);
         let track_name = decode_utf16(&page_static.track);
 
-        Ok(super::AccSharedMemory(AccInner { physics, graphics, static_data, car_model, track_name }))
+        Ok(super::AccSharedMemory(AccInner {
+            physics,
+            graphics,
+            static_data,
+            car_model,
+            track_name,
+        }))
     }
 
     pub fn read_frame(inner: &mut AccInner) -> Result<Option<AccFrame>, AccSharedMemoryError> {
@@ -463,41 +501,45 @@ mod platform {
         // Physics double-read: spin until packet_id is stable across the memcpy.
         let phys: PageFilePhysics = {
             loop {
-                let id_before: i32 = unsafe { std::ptr::read_unaligned(inner.physics.view.0 as *const i32) };
+                let id_before: i32 =
+                    unsafe { std::ptr::read_unaligned(inner.physics.view.0.Value as *const i32) };
                 let data: PageFilePhysics = unsafe { inner.physics.read_copy() };
-                let id_after: i32 = unsafe { std::ptr::read_unaligned(inner.physics.view.0 as *const i32) };
-                if id_before == id_after { break data; }
+                let id_after: i32 =
+                    unsafe { std::ptr::read_unaligned(inner.physics.view.0.Value as *const i32) };
+                if id_before == id_after {
+                    break data;
+                }
                 std::hint::spin_loop();
             }
         };
 
         // Refresh static metadata (car/track can change between sessions).
         let page_static: PageFileStatic = unsafe { inner.static_data.read_copy() };
-        inner.car_model  = decode_utf16(&page_static.car_model);
+        inner.car_model = decode_utf16(&page_static.car_model);
         inner.track_name = decode_utf16(&page_static.track);
 
         // ACC gear encoding: 0=reverse, 1=neutral, 2=1st … → -1/0/1 …
         let gear: i8 = (phys.gear - 1) as i8;
 
         Ok(Some(AccFrame {
-            speed_kph:                  phys.speed_kmh,
-            rpm:                        phys.rpm as u32,
+            speed_kph: phys.speed_kmh,
+            rpm: phys.rpm as u32,
             gear,
-            throttle:                   phys.gas,
-            brake:                      phys.brake,
-            clutch:                     phys.clutch,
-            steering:                   phys.steer_angle,
-            lap_time_ms:                gfx.i_current_time.max(0) as u32,
-            normalized_track_position:  gfx.normalized_car_position.clamp(0.0, 1.0),
-            fuel_kg:                    phys.fuel,
-            tyre_pressure:              phys.wheels_pressure,
-            tyre_temp_c:                phys.tyre_core_temperature,
-            brake_temp_c:               phys.brake_temp,
-            flag:                       gfx.flag,
-            car_model:                  inner.car_model.clone(),
-            track_name:                 inner.track_name.clone(),
-            position:                   gfx.position,
-            completed_laps:             gfx.completed_laps,
+            throttle: phys.gas,
+            brake: phys.brake,
+            clutch: phys.clutch,
+            steering: phys.steer_angle,
+            lap_time_ms: gfx.i_current_time.max(0) as u32,
+            normalized_track_position: gfx.normalized_car_position.clamp(0.0, 1.0),
+            fuel_kg: phys.fuel,
+            tyre_pressure: phys.wheels_pressure,
+            tyre_temp_c: phys.tyre_core_temperature,
+            brake_temp_c: phys.brake_temp,
+            flag: gfx.flag,
+            car_model: inner.car_model.clone(),
+            track_name: inner.track_name.clone(),
+            position: gfx.position,
+            completed_laps: gfx.completed_laps,
         }))
     }
 }

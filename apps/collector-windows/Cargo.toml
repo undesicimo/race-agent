@@ -9,6 +9,11 @@ acc-shared-memory = { path = "../../crates/acc-shared-memory" }
 anyhow.workspace = true
 clap.workspace = true
 collector-core = { path = "../../crates/collector-core" }
+serde.workspace = true
+serde_json.workspace = true
 telemetry-core = { path = "../../crates/telemetry-core" }
 tokio = { workspace = true, features = ["signal"] }
 uuid.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+native-windows-gui = "1.0"
