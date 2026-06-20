@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = [
+  "apps/collector-windows",
+  "crates/telemetry-core",
+  "crates/acc-shared-memory",
+  "crates/collector-core",
+]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/your-org/sim-telemetry"
+
+[workspace.dependencies]
+anyhow = "1.0"
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4.5", features = ["derive", "env"] }
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+tokio = { version = "1.45", features = ["macros", "rt-multi-thread", "time"] }
+uuid = { version = "1.17", features = ["serde", "v4"] }

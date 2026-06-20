@@ -1,0 +1,17 @@
+{
+  "name": "sim-telemetry",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev:web": "pnpm --filter @sim-telemetry/web dev",
+    "dev:mcp": "pnpm --filter @sim-telemetry/mcp dev",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
