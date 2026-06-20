@@ -1,5 +1,5 @@
-import { SessionEndSchema } from "@sim-telemetry/telemetry-schema";
-import { endIngestSession } from "@sim-telemetry/database";
+import { SessionEndSchema } from "@race-agent/telemetry-schema";
+import { endIngestSession } from "@race-agent/database";
 import { NextResponse } from "next/server";
 
 import { getDb } from "../../../../../lib/db";

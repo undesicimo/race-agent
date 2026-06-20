@@ -1,5 +1,5 @@
 {
-  "name": "@sim-telemetry/telemetry-schema",
+  "name": "@race-agent/telemetry-schema",
   "version": "0.1.0",
   "private": true,
   "type": "module",

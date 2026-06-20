@@ -1,5 +1,5 @@
-import { TelemetryBatchSchema } from "@sim-telemetry/telemetry-schema";
-import { insertTelemetryBatch } from "@sim-telemetry/database";
+import { TelemetryBatchSchema } from "@race-agent/telemetry-schema";
+import { insertTelemetryBatch } from "@race-agent/database";
 import { NextResponse } from "next/server";
 
 import { getDb } from "../../../../../lib/db";

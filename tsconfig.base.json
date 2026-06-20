@@ -12,9 +12,9 @@
     "isolatedModules": true,
     "noEmit": true,
     "paths": {
-      "@sim-telemetry/analysis": ["./packages/analysis/src"],
-      "@sim-telemetry/database": ["./packages/database/src"],
-      "@sim-telemetry/telemetry-schema": ["./packages/telemetry-schema/src"]
+      "@race-agent/analysis": ["./packages/analysis/src"],
+      "@race-agent/database": ["./packages/database/src"],
+      "@race-agent/telemetry-schema": ["./packages/telemetry-schema/src"]
     }
   }
 }

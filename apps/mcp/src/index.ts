@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 
 const server = new McpServer({
-  name: "sim-telemetry",
+  name: "race-agent",
   version: "0.1.0"
 });
 

@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "sim-telemetry",
+  title: "Race Agent",
   description: "Sim racing telemetry ingestion and analysis"
 };
 
@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               height="20"
               style={{ display: "block" }}
             />
-            <span>sim-telemetry</span>
+            <span>Race Agent</span>
           </Link>
           <nav>
             <Link href="/sessions">Sessions</Link>

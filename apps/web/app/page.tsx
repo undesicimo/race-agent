@@ -4,7 +4,7 @@ export default function HomePage() {
   return (
     <div className="stack">
       <section className="hero">
-        <h1>Sim telemetry dashboard</h1>
+        <h1>Race Agent dashboard</h1>
         <p className="hero-sub">
           Ingest ACC telemetry, store normalized sessions, and analyze driving
           performance.

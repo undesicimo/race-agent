@@ -36,7 +36,7 @@ pnpm db:stop
 The default local database URL is:
 
 ```txt
-postgres://postgres:postgres@localhost:5432/sim_telemetry
+postgres://postgres:postgres@localhost:5432/race_agent
 ```
 
 ## Commands

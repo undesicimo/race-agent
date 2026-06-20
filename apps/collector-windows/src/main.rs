@@ -31,7 +31,7 @@ impl From<SimArg> for Sim {
 
 #[cfg(target_os = "windows")]
 #[derive(Debug, Parser)]
-#[command(author, version, about = "Windows tray collector for sim telemetry")]
+#[command(author, version, about = "Windows tray collector for Race Agent")]
 struct Cli {
     /// Override the server URL stored in the local collector config.
     #[arg(long)]
@@ -50,7 +50,7 @@ struct Cli {
 #[derive(Debug, Parser)]
 #[command(author, version, about = "ACC telemetry collector")]
 struct Cli {
-    /// Base URL of the sim-telemetry server (e.g. http://localhost:3000).
+    /// Base URL of the Race Agent server (e.g. http://localhost:3000).
     #[arg(long)]
     server: String,
 

@@ -1,5 +1,5 @@
 {
-  "name": "@sim-telemetry/analysis",
+  "name": "@race-agent/analysis",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@sim-telemetry/telemetry-schema": "workspace:*"
+    "@race-agent/telemetry-schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

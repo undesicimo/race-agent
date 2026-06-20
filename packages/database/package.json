@@ -1,5 +1,5 @@
 {
-  "name": "@sim-telemetry/database",
+  "name": "@race-agent/database",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@sim-telemetry/telemetry-schema": "workspace:^",
+    "@race-agent/telemetry-schema": "workspace:^",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.7"
   },

@@ -1,7 +1,7 @@
-# sim-telemetry
+# Race Agent
 
 <p align="center">
-  <img src="./apps/web/public/logo.svg" alt="sim-telemetry logo" width="420" />
+  <img src="./apps/web/public/logo.svg" alt="Race Agent logo" width="420" />
 </p>
 
 OSS monorepo for sim racing telemetry collection, ingestion, visualization, and AI-assisted analysis.
@@ -65,7 +65,7 @@ pnpm rust:check   # Run cargo check --workspace
 The default local database URL is:
 
 ```txt
-postgres://postgres:postgres@localhost:5432/sim_telemetry
+postgres://postgres:postgres@localhost:5432/race_agent
 ```
 
 It is defined in [.env.example](./.env.example). Copy that file to `.env.local` before running the app.

@@ -31,7 +31,7 @@ pnpm db:logs
 Set `DATABASE_URL` before running Drizzle commands.
 
 ```sh
-export DATABASE_URL=postgres://postgres:postgres@localhost:5432/sim_telemetry
+export DATABASE_URL=postgres://postgres:postgres@localhost:5432/race_agent
 pnpm db:generate
 pnpm db:migrate
 ```

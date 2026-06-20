@@ -1,5 +1,5 @@
 {
-  "name": "@sim-telemetry/web",
+  "name": "@race-agent/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@better-auth/api-key": "^1.6.20",
-    "@sim-telemetry/analysis": "workspace:*",
-    "@sim-telemetry/database": "workspace:*",
-    "@sim-telemetry/telemetry-schema": "workspace:*",
+    "@race-agent/analysis": "workspace:*",
+    "@race-agent/database": "workspace:*",
+    "@race-agent/telemetry-schema": "workspace:*",
     "better-auth": "^1.6.20",
     "next": "^15.3.4",
     "react": "^19.1.0",
