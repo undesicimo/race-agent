@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/undesicimo/race-agent/compare/v1.0.0...v1.0.1) (2026-06-20)
+
+
+### Bug Fixes
+
+* verify windows collector releases ([59609d4](https://github.com/undesicimo/race-agent/commit/59609d41095ae299ded1417252049fd28fe38f4b))
+
 ## 1.0.0 (2026-06-20)
 
 
