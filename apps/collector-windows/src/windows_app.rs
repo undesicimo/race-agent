@@ -56,15 +56,13 @@ pub fn run(overrides: LaunchOverrides) -> Result<()> {
     }
 
     let app = App::build(config)?;
-    let should_show = overrides.show_window || app.has_incomplete_config();
+    let should_show = overrides.show_window;
 
     if should_show {
         app.show_window();
     }
 
-    if !app.has_incomplete_config() {
-        app.start_collector();
-    }
+    app.start_collector();
 
     nwg::dispatch_thread_events();
     Ok(())
@@ -319,10 +317,6 @@ impl App {
         *self.event_handler.borrow_mut() = Some(handler);
     }
 
-    fn has_incomplete_config(&self) -> bool {
-        self.server_input.text().trim().is_empty() || self.token_input.text().trim().is_empty()
-    }
-
     fn show_window(&self) {
         self.window.set_visible(true);
         self.window.restore();
@@ -343,12 +337,6 @@ impl App {
         }
 
         let config = self.current_config();
-        if config.server.trim().is_empty() || config.token.trim().is_empty() {
-            self.set_status("Server and token are required.");
-            self.show_window();
-            return;
-        }
-
         if let Err(error) = config.save() {
             self.set_status(&format!("Failed to save configuration: {error}"));
             return;

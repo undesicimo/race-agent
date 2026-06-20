@@ -10,9 +10,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@better-auth/api-key": "^1.6.20",
     "@sim-telemetry/analysis": "workspace:*",
     "@sim-telemetry/database": "workspace:*",
     "@sim-telemetry/telemetry-schema": "workspace:*",
+    "better-auth": "^1.6.20",
     "next": "^15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

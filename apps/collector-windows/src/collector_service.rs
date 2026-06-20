@@ -48,9 +48,34 @@ pub async fn run(
         token: config.token.clone(),
         session_id: Uuid::new_v4(),
     });
+    let uploads_enabled = uploader.is_enabled();
+
+    if uploads_enabled {
+        emit(
+            &event_tx,
+            CollectorEvent::Status(format!("Uploading to {}.", config.server)),
+        );
+    } else {
+        emit(
+            &event_tx,
+            CollectorEvent::Status(
+                "Local mode: no server/token configured; telemetry will not be uploaded."
+                    .to_string(),
+            ),
+        );
+    }
 
     let result = match config.sim {
-        Sim::Acc => run_acc_service(uploader, config.sim, event_tx.clone(), shutdown_rx).await,
+        Sim::Acc => {
+            run_acc_service(
+                uploader,
+                config.sim,
+                uploads_enabled,
+                event_tx.clone(),
+                shutdown_rx,
+            )
+            .await
+        }
         other => {
             emit(
                 &event_tx,
@@ -67,6 +92,7 @@ pub async fn run(
 async fn run_acc_service(
     uploader: TelemetryUploader,
     sim: Sim,
+    uploads_enabled: bool,
     event_tx: Sender<CollectorEvent>,
     mut shutdown_rx: watch::Receiver<bool>,
 ) -> Result<()> {
@@ -96,10 +122,12 @@ async fn run_acc_service(
 
         let session_id = match uploader.start_session(sim, car_name, track_name).await {
             Ok(id) => {
-                emit(
-                    &event_tx,
-                    CollectorEvent::Status(format!("Session started: {id}")),
-                );
+                let status = if uploads_enabled {
+                    format!("Session started: {id}")
+                } else {
+                    format!("Local session started: {id}")
+                };
+                emit(&event_tx, CollectorEvent::Status(status));
                 id
             }
             Err(error) => {
@@ -145,10 +173,15 @@ async fn run_acc_service(
                 &event_tx,
                 CollectorEvent::Status(format!("Failed to end session: {error}")),
             );
-        } else {
+        } else if uploads_enabled {
             emit(
                 &event_tx,
                 CollectorEvent::Status(format!("Session ended: {session_id}")),
+            );
+        } else {
+            emit(
+                &event_tx,
+                CollectorEvent::Status(format!("Local session ended: {session_id}")),
             );
         }
 
@@ -264,15 +297,22 @@ async fn flush(
     let frames = std::mem::take(batch);
     let count = frames.len();
 
+    let uploads_enabled = uploader.is_enabled();
+
     if let Err(error) = uploader.upload_batch(frames).await {
         emit(
             event_tx,
             CollectorEvent::Status(format!("Upload failed for {count} frames: {error}")),
         );
-    } else {
+    } else if uploads_enabled {
         emit(
             event_tx,
             CollectorEvent::Status(format!("Uploaded {count} frames.")),
+        );
+    } else {
+        emit(
+            event_tx,
+            CollectorEvent::Status(format!("Collected {count} frames locally.")),
         );
     }
 }

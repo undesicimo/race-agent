@@ -1,6 +1,6 @@
 # Database
 
-Postgres is the initial database. Drizzle owns schema definitions and migrations.
+Postgres with TimescaleDB is the initial database. Drizzle owns schema definitions and migrations.
 
 Set `DATABASE_URL` before running Drizzle commands.
 
@@ -18,6 +18,8 @@ Core tables:
 - `session_events`
 - `cars`
 - `tracks`
+- `apikey`
+- `collector_heartbeats`
 
 V1 stores useful normalized fields first. Raw/debug capture should be optional and disabled by default.
 
@@ -30,4 +32,4 @@ Sampling guidance:
 - Events: on change/completion.
 - Session summary: once per session.
 
-TimescaleDB can be evaluated later if raw sample volume becomes a bottleneck.
+`telemetry_samples` is a TimescaleDB hypertable partitioned by `recorded_at`.

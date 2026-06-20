@@ -32,8 +32,16 @@ impl TelemetryUploader {
         }
     }
 
+    pub fn is_enabled(&self) -> bool {
+        !self.config.server.trim().is_empty() && !self.config.token.trim().is_empty()
+    }
+
     pub async fn upload_batch(&self, samples: Vec<TelemetryFrame>) -> Result<()> {
         if samples.is_empty() {
+            return Ok(());
+        }
+
+        if !self.is_enabled() {
             return Ok(());
         }
 
@@ -64,6 +72,10 @@ impl TelemetryUploader {
         car_name: Option<String>,
         track_name: Option<String>,
     ) -> Result<Uuid> {
+        if !self.is_enabled() {
+            return Ok(self.config.session_id);
+        }
+
         #[derive(Serialize)]
         #[serde(rename_all = "camelCase")]
         struct Req<'a> {
@@ -106,6 +118,10 @@ impl TelemetryUploader {
 
     /// Notify the server that the session has ended.
     pub async fn end_session(&self, session_id: Uuid) -> Result<()> {
+        if !self.is_enabled() {
+            return Ok(());
+        }
+
         #[derive(Serialize)]
         #[serde(rename_all = "camelCase")]
         struct Req {
@@ -133,6 +149,10 @@ impl TelemetryUploader {
         status: &str,
         message: Option<&str>,
     ) -> Result<()> {
+        if !self.is_enabled() {
+            return Ok(());
+        }
+
         #[derive(Serialize)]
         #[serde(rename_all = "camelCase")]
         struct Req<'a> {

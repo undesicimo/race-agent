@@ -14,7 +14,7 @@ pub struct AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
-            server: "http://localhost:3000".to_string(),
+            server: String::new(),
             token: String::new(),
             sim: Sim::Acc,
         }

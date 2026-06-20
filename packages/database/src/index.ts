@@ -4,6 +4,7 @@ import postgres from "postgres";
 import * as schema from "./schema";
 
 export * from "./schema";
+export * from "./ingest";
 
 export function createDatabase(url = process.env.DATABASE_URL) {
   if (!url) {
