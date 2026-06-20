@@ -21,8 +21,8 @@
 ## Next For You
 
 1. [ ] Stand up local Postgres/TimescaleDB and run migrations.
-   - Set `DATABASE_URL`.
-   - Run `pnpm --filter @sim-telemetry/database db:migrate`.
+   - Run `cp .env.example .env.local`.
+   - Run `pnpm dev`.
    - Confirm the Timescale hypertable migration applies cleanly.
 
 2. [ ] Smoke-test ingest end to end without the Windows collector.
