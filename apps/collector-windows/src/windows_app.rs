@@ -55,14 +55,19 @@ pub fn run(overrides: LaunchOverrides) -> Result<()> {
         config.token = token;
     }
 
+    let config_ready = config.is_ready();
     let app = App::build(config)?;
-    let should_show = overrides.show_window;
+    let should_show = overrides.show_window || !config_ready;
 
     if should_show {
         app.show_window();
     }
 
-    app.start_collector();
+    if config_ready {
+        app.start_collector();
+    } else {
+        app.set_status("Enter the server endpoint and token, then click Save or Start.");
+    }
 
     nwg::dispatch_thread_events();
     Ok(())
@@ -325,6 +330,12 @@ impl App {
 
     fn save_config(&self) {
         let config = self.current_config();
+        if !config.is_ready() {
+            self.show_window();
+            self.set_status("Server endpoint and token are required.");
+            return;
+        }
+
         match config.save() {
             Ok(()) => self.set_status("Configuration saved."),
             Err(error) => self.set_status(&format!("Failed to save configuration: {error}")),
@@ -337,6 +348,12 @@ impl App {
         }
 
         let config = self.current_config();
+        if !config.is_ready() {
+            self.show_window();
+            self.set_status("Server endpoint and token are required before starting.");
+            return;
+        }
+
         if let Err(error) = config.save() {
             self.set_status(&format!("Failed to save configuration: {error}"));
             return;

@@ -14,7 +14,7 @@ pub struct AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
-            server: String::new(),
+            server: "http://localhost:3000".to_string(),
             token: String::new(),
             sim: Sim::Acc,
         }
@@ -22,6 +22,10 @@ impl Default for AppConfig {
 }
 
 impl AppConfig {
+    pub fn is_ready(&self) -> bool {
+        !self.server.trim().is_empty() && !self.token.trim().is_empty()
+    }
+
     pub fn load() -> Result<Self> {
         let path = config_path()?;
         if !path.exists() {
