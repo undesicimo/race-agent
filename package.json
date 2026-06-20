@@ -11,7 +11,7 @@
     "db:logs": "docker compose logs -f db",
     "db:migrate": "pnpm --filter @sim-telemetry/database db:migrate",
     "db:stop": "docker compose stop db",
-    "db:up": "docker compose up -d --wait db",
+    "db:up": "node scripts/check-docker.mjs && docker compose up -d --wait db",
     "dev": "pnpm dev:local",
     "dev:local": "pnpm db:up && pnpm db:migrate && pnpm dev:web",
     "dev:web": "pnpm --filter @sim-telemetry/web dev",
