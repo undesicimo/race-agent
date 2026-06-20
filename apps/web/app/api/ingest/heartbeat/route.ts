@@ -1,5 +1,5 @@
-import { HeartbeatSchema } from "@sim-telemetry/telemetry-schema";
-import { insertCollectorHeartbeat } from "@sim-telemetry/database";
+import { HeartbeatSchema } from "@race-agent/telemetry-schema";
+import { insertCollectorHeartbeat } from "@race-agent/database";
 import { NextResponse } from "next/server";
 
 import { getDb } from "../../../../lib/db";

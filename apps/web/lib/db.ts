@@ -1,4 +1,4 @@
-import { createDatabase } from "@sim-telemetry/database";
+import { createDatabase } from "@race-agent/database";
 
 let db: ReturnType<typeof createDatabase> | undefined;
 

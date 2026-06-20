@@ -1,20 +1,20 @@
 services:
   db:
     image: timescale/timescaledb:latest-pg17
-    container_name: sim-telemetry-db
+    container_name: race-agent-db
     environment:
-      POSTGRES_DB: sim_telemetry
+      POSTGRES_DB: race_agent
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
-      - sim_telemetry_db:/var/lib/postgresql/data
+      - race_agent_db:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d sim_telemetry"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d race_agent"]
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
-  sim_telemetry_db:
+  race_agent_db:

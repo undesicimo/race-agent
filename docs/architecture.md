@@ -1,6 +1,6 @@
 # Architecture
 
-`sim-telemetry` is split into three runtime surfaces:
+`race-agent` is split into three runtime surfaces:
 
 - Windows collector: reads local simulator telemetry and uploads normalized batches.
 - Next.js web app: owns ingestion, storage, and visualization.

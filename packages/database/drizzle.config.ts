@@ -7,6 +7,6 @@ export default defineConfig({
   schema: "./src/schema.ts",
   out: "./drizzle",
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/sim_telemetry"
+    url: process.env.DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/race_agent"
   }
 });

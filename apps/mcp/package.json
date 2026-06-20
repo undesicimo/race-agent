@@ -1,5 +1,5 @@
 {
-  "name": "@sim-telemetry/mcp",
+  "name": "@race-agent/mcp",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.13.0",
-    "@sim-telemetry/analysis": "workspace:*",
-    "@sim-telemetry/database": "workspace:*",
+    "@race-agent/analysis": "workspace:*",
+    "@race-agent/database": "workspace:*",
     "zod": "^3.25.67"
   },
   "devDependencies": {

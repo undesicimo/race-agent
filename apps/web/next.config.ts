@@ -2,9 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   transpilePackages: [
-    "@sim-telemetry/analysis",
-    "@sim-telemetry/database",
-    "@sim-telemetry/telemetry-schema"
+    "@race-agent/analysis",
+    "@race-agent/database",
+    "@race-agent/telemetry-schema"
   ]
 };
 

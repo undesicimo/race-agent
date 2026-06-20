@@ -10,7 +10,7 @@ members = [
 [workspace.package]
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/your-org/sim-telemetry"
+repository = "https://github.com/your-org/race-agent"
 
 [workspace.dependencies]
 anyhow = "1.0"

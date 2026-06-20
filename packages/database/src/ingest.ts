@@ -5,7 +5,7 @@ import type {
   SessionEnd,
   SessionStart,
   TelemetryBatch
-} from "@sim-telemetry/telemetry-schema";
+} from "@race-agent/telemetry-schema";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import {

@@ -1,4 +1,4 @@
-import type { TelemetrySample } from "@sim-telemetry/telemetry-schema";
+import type { TelemetrySample } from "@race-agent/telemetry-schema";
 
 export interface LapSummary {
   sampleCount: number;
