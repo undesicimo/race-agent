@@ -64,3 +64,105 @@ main {
   font-size: 24px;
   margin-top: 6px;
 }
+
+.token-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.token-panel h2,
+.token-panel p {
+  margin: 0;
+}
+
+.token-panel p {
+  color: #55554f;
+}
+
+.token-form {
+  display: grid;
+  gap: 8px;
+}
+
+.token-form label {
+  font-weight: 600;
+}
+
+.token-row {
+  display: flex;
+  gap: 10px;
+}
+
+input,
+button {
+  border-radius: 8px;
+  font: inherit;
+}
+
+input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid #cfcfc8;
+  padding: 10px 12px;
+}
+
+button {
+  border: 1px solid #171717;
+  background: #171717;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+button.secondary {
+  border-color: #cfcfc8;
+  background: #ffffff;
+  color: #171717;
+}
+
+.message {
+  margin: 0;
+}
+
+.error {
+  color: #b42318;
+}
+
+.token-result {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #e8e8e2;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.token-result strong,
+.eyebrow {
+  display: block;
+}
+
+.eyebrow {
+  color: #686861;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.token-result code {
+  overflow-wrap: anywhere;
+  border-radius: 8px;
+  background: #f1f1ec;
+  padding: 12px;
+}
+
+@media (max-width: 640px) {
+  .token-row {
+    display: grid;
+  }
+}

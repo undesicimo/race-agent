@@ -1,3 +1,5 @@
+import { TokenCreator } from "./token-creator";
+
 export default function HomePage() {
   return (
     <div className="stack">
@@ -15,6 +17,7 @@ export default function HomePage() {
           and lap time into Postgres for a live session page.
         </p>
       </section>
+      <TokenCreator />
     </div>
   );
 }
