@@ -7,6 +7,16 @@ export async function POST(request: Request) {
   const name =
     typeof requestedName === "string" && requestedName.trim() ? requestedName.trim() : "Collector";
 
+  if (!process.env.DATABASE_URL) {
+    return Response.json(
+      {
+        error:
+          "DATABASE_URL is not set. Start the local database with `pnpm dev` or set DATABASE_URL before creating collector tokens."
+      },
+      { status: 503 }
+    );
+  }
+
   const apiKey = await getAuth().api.createApiKey({
     body: {
       name,

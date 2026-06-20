@@ -8,6 +8,10 @@ type CreatedToken = {
   token: string;
 };
 
+type TokenError = {
+  error?: string;
+};
+
 export function TokenCreator() {
   const [name, setName] = useState("ACC Collector");
   const [createdToken, setCreatedToken] = useState<CreatedToken | null>(null);
@@ -31,7 +35,8 @@ export function TokenCreator() {
       });
 
       if (!response.ok) {
-        throw new Error("Could not create collector token.");
+        const body = (await response.json().catch(() => ({}))) as TokenError;
+        throw new Error(body.error ?? "Could not create collector token.");
       }
 
       const token = (await response.json()) as CreatedToken;

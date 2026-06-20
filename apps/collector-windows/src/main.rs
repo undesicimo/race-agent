@@ -38,7 +38,7 @@ struct Cli {
     server: Option<String>,
 
     /// Override the token stored in the local collector config.
-    #[arg(long, env = "SIM_TELEMETRY_TOKEN")]
+    #[arg(long)]
     token: Option<String>,
 
     /// Show the settings window on launch.
@@ -55,7 +55,7 @@ struct Cli {
     server: String,
 
     /// Bearer token for ingest authentication.
-    #[arg(long, env = "SIM_TELEMETRY_TOKEN")]
+    #[arg(long)]
     token: String,
 
     /// Simulator to collect from.
