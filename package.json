@@ -6,10 +6,14 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build": "pnpm -r build",
+    "check": "pnpm lint && pnpm typecheck && cargo check --workspace",
+    "db:generate": "pnpm --filter @sim-telemetry/database db:generate",
+    "db:migrate": "pnpm --filter @sim-telemetry/database db:migrate",
     "dev:web": "pnpm --filter @sim-telemetry/web dev",
     "dev:mcp": "pnpm --filter @sim-telemetry/mcp dev",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
+    "rust:check": "cargo check --workspace",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
