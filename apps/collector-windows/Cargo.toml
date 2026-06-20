@@ -9,5 +9,6 @@ acc-shared-memory = { path = "../../crates/acc-shared-memory" }
 anyhow.workspace = true
 clap.workspace = true
 collector-core = { path = "../../crates/collector-core" }
-tokio.workspace = true
+telemetry-core = { path = "../../crates/telemetry-core" }
+tokio = { workspace = true, features = ["signal"] }
 uuid.workspace = true

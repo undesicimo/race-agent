@@ -13,10 +13,10 @@
 
 ## Milestone 1: End-to-End ACC Telemetry
 
-- [ ] Implement ACC shared-memory structs and Windows mapping access.
-- [ ] Add packet ID double-read safety.
-- [ ] Normalize ACC frames into `TelemetryFrame`.
-- [ ] Implement collector CLI upload loop.
+- [x] Implement ACC shared-memory structs and Windows mapping access.
+- [x] Add packet ID double-read safety.
+- [x] Normalize ACC frames into `TelemetryFrame`.
+- [x] Implement collector CLI upload loop.
 - [ ] Implement ingest authentication.
 - [ ] Persist sessions and telemetry samples in Postgres.
 - [ ] Add live/current session web page.
