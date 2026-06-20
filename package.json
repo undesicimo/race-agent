@@ -17,11 +17,14 @@
     "dev:web": "pnpm --filter @sim-telemetry/web dev",
     "dev:mcp": "pnpm --filter @sim-telemetry/mcp dev",
     "lint": "oxlint",
+    "lint:commits": "commitlint --from HEAD~1 --to HEAD",
     "lint:fix": "oxlint --fix",
     "rust:check": "cargo check --workspace",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
     "oxlint": "^1.70.0",
     "oxlint-tsgolint": "^0.23.0",
     "typescript": "^6.0.3"
