@@ -1,10 +1,13 @@
-import { auth } from "../../../../lib/auth";
+import { getAuth } from "../../../../lib/auth";
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}));
-  const name = typeof body.name === "string" && body.name.trim() ? body.name.trim() : "Collector";
+  const body: unknown = await request.json().catch(() => ({}));
+  const requestedName =
+    typeof body === "object" && body !== null && "name" in body ? body.name : undefined;
+  const name =
+    typeof requestedName === "string" && requestedName.trim() ? requestedName.trim() : "Collector";
 
-  const apiKey = await auth.api.createApiKey({
+  const apiKey = await getAuth().api.createApiKey({
     body: {
       name,
       prefix: "race_",

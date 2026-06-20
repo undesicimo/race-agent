@@ -1,3 +1,8 @@
 import { createDatabase } from "@sim-telemetry/database";
 
-export const db = createDatabase();
+let db: ReturnType<typeof createDatabase> | undefined;
+
+export function getDb() {
+  db ??= createDatabase();
+  return db;
+}

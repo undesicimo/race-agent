@@ -11,11 +11,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
-      "@sim-telemetry/analysis": ["packages/analysis/src"],
-      "@sim-telemetry/database": ["packages/database/src"],
-      "@sim-telemetry/telemetry-schema": ["packages/telemetry-schema/src"]
+      "@sim-telemetry/analysis": ["./packages/analysis/src"],
+      "@sim-telemetry/database": ["./packages/database/src"],
+      "@sim-telemetry/telemetry-schema": ["./packages/telemetry-schema/src"]
     }
   }
 }

@@ -2,7 +2,7 @@ import { SessionEndSchema } from "@sim-telemetry/telemetry-schema";
 import { endIngestSession } from "@sim-telemetry/database";
 import { NextResponse } from "next/server";
 
-import { db } from "../../../../../lib/db";
+import { getDb } from "../../../../../lib/db";
 import { verifyCollectorRequest } from "../../../../../lib/collector-auth";
 
 export async function POST(request: Request) {
@@ -16,9 +16,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: payload.error.flatten() }, { status: 400 });
   }
 
-  const { session, endedAt } = await endIngestSession(db, payload.data);
+  const { session, endedAt } = await endIngestSession(getDb(), payload.data);
 
-  if (!session) {
+  if (session === undefined) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 

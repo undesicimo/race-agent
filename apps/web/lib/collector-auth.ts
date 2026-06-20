@@ -1,4 +1,4 @@
-import { auth } from "./auth";
+import { getAuth } from "./auth";
 
 export async function verifyCollectorRequest(request: Request) {
   const header = request.headers.get("authorization");
@@ -11,7 +11,7 @@ export async function verifyCollectorRequest(request: Request) {
     };
   }
 
-  const result = await auth.api.verifyApiKey({
+  const result = await getAuth().api.verifyApiKey({
     body: {
       key: token,
       permissions: {

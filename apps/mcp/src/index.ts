@@ -13,7 +13,7 @@ server.tool(
   {
     limit: z.number().int().min(1).max(100).default(20)
   },
-  async ({ limit }) => ({
+  ({ limit }) => ({
     content: [
       {
         type: "text",

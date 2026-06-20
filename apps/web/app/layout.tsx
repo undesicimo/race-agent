@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import "./globals.css";
@@ -13,9 +14,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <header className="site-header">
-          <a href="/">sim-telemetry</a>
+          <Link href="/">sim-telemetry</Link>
           <nav>
-            <a href="/sessions">Sessions</a>
+            <Link href="/sessions">Sessions</Link>
           </nav>
         </header>
         <main>{children}</main>

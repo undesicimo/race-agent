@@ -6,33 +6,33 @@ import type {
   SessionStart,
   TelemetryBatch
 } from "@sim-telemetry/telemetry-schema";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import {
   cars,
   collectorHeartbeats,
   sessions,
   telemetrySamples,
-  tracks,
-  type simEnum
+  tracks
 } from "./schema";
-import type { createDatabase } from "./index";
+import type * as schema from "./schema";
 
-type Database = ReturnType<typeof createDatabase>;
-type Sim = (typeof simEnum.enumValues)[number];
+type Database = PostgresJsDatabase<typeof schema>;
+type Sim = SessionStart["sim"];
 
 async function findOrCreateCar(db: Database, sim: Sim, name?: string) {
   if (!name) {
     return null;
   }
 
-  const [existing] = await db
+  const existingRows = await db
     .select({ id: cars.id })
     .from(cars)
     .where(and(eq(cars.sim, sim), eq(cars.name, name)))
     .limit(1);
 
-  if (existing) {
-    return existing.id;
+  if (existingRows.length > 0) {
+    return existingRows[0].id;
   }
 
   const [created] = await db.insert(cars).values({ sim, name }).returning({ id: cars.id });
@@ -44,14 +44,14 @@ async function findOrCreateTrack(db: Database, sim: Sim, name?: string) {
     return null;
   }
 
-  const [existing] = await db
+  const existingRows = await db
     .select({ id: tracks.id })
     .from(tracks)
     .where(and(eq(tracks.sim, sim), eq(tracks.name, name)))
     .limit(1);
 
-  if (existing) {
-    return existing.id;
+  if (existingRows.length > 0) {
+    return existingRows[0].id;
   }
 
   const [created] = await db.insert(tracks).values({ sim, name }).returning({ id: tracks.id });
@@ -80,13 +80,16 @@ export async function startIngestSession(db: Database, payload: SessionStart) {
 
 export async function endIngestSession(db: Database, payload: SessionEnd) {
   const endedAt = payload.endedAt ? new Date(payload.endedAt) : new Date();
-  const [session] = await db
+  const sessionRows = await db
     .update(sessions)
     .set({ endedAt })
     .where(eq(sessions.id, payload.sessionId))
     .returning({ id: sessions.id, endedAt: sessions.endedAt });
 
-  return { session, endedAt };
+  return {
+    session: sessionRows.length > 0 ? sessionRows[0] : undefined,
+    endedAt
+  };
 }
 
 export async function insertTelemetryBatch(db: Database, payload: TelemetryBatch) {
