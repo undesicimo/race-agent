@@ -10,6 +10,8 @@ use telemetry_core::Sim;
 use tokio::runtime::Runtime;
 use tokio::sync::watch;
 
+const APP_ICON: &[u8] = include_bytes!("../assets/icon.ico");
+
 pub struct LaunchOverrides {
     pub server: Option<String>,
     pub token: Option<String>,
@@ -95,13 +97,18 @@ impl App {
         let mut start_button = nwg::Button::default();
         let mut stop_button = nwg::Button::default();
 
-        let icon = nwg::Icon::from_system(nwg::OemIcon::Information);
+        let mut icon = nwg::Icon::default();
+        nwg::Icon::builder()
+            .source_bin(Some(APP_ICON))
+            .build(&mut icon)
+            .context("failed to load app icon")?;
 
         nwg::Window::builder()
             .size((420, 220))
             .position((300, 300))
             .title("Race Agent Collector")
             .flags(nwg::WindowFlags::WINDOW)
+            .icon(Some(&icon))
             .build(&mut window)
             .context("failed to build window")?;
 

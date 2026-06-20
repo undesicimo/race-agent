@@ -1,5 +1,9 @@
 # sim-telemetry
 
+<p align="center">
+  <img src="./apps/web/public/logo.svg" alt="sim-telemetry logo" width="420" />
+</p>
+
 OSS monorepo for sim racing telemetry collection, ingestion, visualization, and AI-assisted analysis.
 
 The first milestone is an end-to-end Assetto Corsa Competizione flow:

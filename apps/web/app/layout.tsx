@@ -14,7 +14,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <header className="site-header">
-          <Link href="/">sim-telemetry</Link>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <img
+              src="/logo.svg"
+              alt=""
+              width="70"
+              height="20"
+              style={{ display: "block" }}
+            />
+            <span>sim-telemetry</span>
+          </Link>
           <nav>
             <Link href="/sessions">Sessions</Link>
           </nav>
