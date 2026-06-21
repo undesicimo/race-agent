@@ -118,6 +118,7 @@ impl App {
 
         nwg::Menu::builder()
             .popup(true)
+            .parent(&window)
             .build(&mut tray_menu)
             .context("failed to build tray menu")?;
 
