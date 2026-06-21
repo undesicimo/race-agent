@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1](https://github.com/undesicimo/race-agent/compare/v2.0.0...v2.0.1) (2026-06-21)
+
+
+### Bug Fixes
+
+* set parent for windows tray menu ([aea0ff6](https://github.com/undesicimo/race-agent/commit/aea0ff6c9bfa4ad817805051b0891ad1f8641bdf))
+* simplify collector ingest ([d696e67](https://github.com/undesicimo/race-agent/commit/d696e67494fa472d8fd77875635b58fbdcbbd7ee))
+
 ## [2.0.0](https://github.com/undesicimo/race-agent/compare/v1.0.1...v2.0.0) (2026-06-20)
 
 
