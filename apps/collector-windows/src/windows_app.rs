@@ -39,6 +39,9 @@ struct App {
     start_button: nwg::Button,
     stop_button: nwg::Button,
     icon: nwg::Icon,
+    ui_font: nwg::Font,
+    label_font: nwg::Font,
+    status_font: nwg::Font,
     event_handler: RefCell<Option<nwg::EventHandler>>,
     worker_stop: RefCell<Option<watch::Sender<bool>>>,
     event_rx: RefCell<Option<Receiver<CollectorEvent>>>,
@@ -96,6 +99,9 @@ impl App {
         let mut save_button = nwg::Button::default();
         let mut start_button = nwg::Button::default();
         let mut stop_button = nwg::Button::default();
+        let mut ui_font = nwg::Font::default();
+        let mut label_font = nwg::Font::default();
+        let mut status_font = nwg::Font::default();
 
         let mut icon = nwg::Icon::default();
         nwg::Icon::builder()
@@ -103,12 +109,31 @@ impl App {
             .build(&mut icon)
             .context("failed to load app icon")?;
 
+        nwg::Font::builder()
+            .family("Segoe UI")
+            .size_absolute(16)
+            .build(&mut ui_font)
+            .context("failed to build UI font")?;
+
+        nwg::Font::builder()
+            .family("Segoe UI")
+            .size_absolute(14)
+            .weight(600)
+            .build(&mut label_font)
+            .context("failed to build label font")?;
+
+        nwg::Font::builder()
+            .family("Segoe UI")
+            .size_absolute(14)
+            .build(&mut status_font)
+            .context("failed to build status font")?;
+
         nwg::Window::builder()
-            .size((420, 220))
-            .position((300, 300))
+            .size((520, 300))
             .title("Race Agent Collector")
             .flags(nwg::WindowFlags::WINDOW)
             .icon(Some(&icon))
+            .center(true)
             .build(&mut window)
             .context("failed to build window")?;
 
@@ -160,83 +185,104 @@ impl App {
             .context("failed to build worker notice")?;
 
         nwg::Label::builder()
-            .text("Server")
-            .position((16, 18))
-            .size((90, 22))
+            .text("SERVER")
+            .position((28, 34))
+            .size((104, 24))
+            .font(Some(&label_font))
+            .h_align(nwg::HTextAlign::Right)
+            .v_align(nwg::VTextAlign::Center)
             .parent(&window)
             .build(&mut server_label)
             .context("failed to build server label")?;
 
         nwg::TextInput::builder()
             .text(&config.server)
-            .position((110, 16))
-            .size((286, 26))
+            .placeholder_text(Some("http://localhost:3000"))
+            .position((148, 28))
+            .size((330, 34))
+            .font(Some(&ui_font))
             .parent(&window)
             .build(&mut server_input)
             .context("failed to build server input")?;
 
         nwg::Label::builder()
-            .text("Token")
-            .position((16, 58))
-            .size((90, 22))
+            .text("TOKEN")
+            .position((28, 84))
+            .size((104, 24))
+            .font(Some(&label_font))
+            .h_align(nwg::HTextAlign::Right)
+            .v_align(nwg::VTextAlign::Center)
             .parent(&window)
             .build(&mut token_label)
             .context("failed to build token label")?;
 
         nwg::TextInput::builder()
             .text(&config.token)
-            .position((110, 56))
-            .size((286, 26))
+            .placeholder_text(Some("Paste ingest token"))
+            .position((148, 78))
+            .size((330, 34))
             .password(Some('*'))
+            .font(Some(&ui_font))
             .parent(&window)
             .build(&mut token_input)
             .context("failed to build token input")?;
 
         nwg::Label::builder()
-            .text("Simulator")
-            .position((16, 98))
-            .size((90, 22))
+            .text("SIMULATOR")
+            .position((28, 134))
+            .size((104, 24))
+            .font(Some(&label_font))
+            .h_align(nwg::HTextAlign::Right)
+            .v_align(nwg::VTextAlign::Center)
             .parent(&window)
             .build(&mut sim_label)
             .context("failed to build sim label")?;
 
         nwg::Label::builder()
             .text("ACC")
-            .position((110, 98))
-            .size((286, 22))
+            .position((148, 130))
+            .size((330, 32))
+            .font(Some(&ui_font))
+            .v_align(nwg::VTextAlign::Center)
             .parent(&window)
             .build(&mut sim_value)
             .context("failed to build sim value")?;
 
         nwg::Label::builder()
             .text("Idle")
-            .position((16, 136))
-            .size((380, 40))
+            .position((28, 184))
+            .size((450, 42))
+            .font(Some(&status_font))
+            .v_align(nwg::VTextAlign::Center)
             .parent(&window)
             .build(&mut status_label)
             .context("failed to build status label")?;
 
         nwg::Button::builder()
             .text("Save")
-            .position((16, 180))
-            .size((96, 28))
+            .position((148, 242))
+            .size((96, 34))
+            .font(Some(&ui_font))
             .parent(&window)
             .build(&mut save_button)
             .context("failed to build save button")?;
 
         nwg::Button::builder()
             .text("Start")
-            .position((206, 180))
-            .size((90, 28))
+            .position((262, 242))
+            .size((104, 34))
+            .font(Some(&ui_font))
+            .focus(true)
             .parent(&window)
             .build(&mut start_button)
             .context("failed to build start button")?;
 
         nwg::Button::builder()
             .text("Stop")
-            .position((306, 180))
-            .size((90, 28))
+            .position((384, 242))
+            .size((94, 34))
             .enabled(false)
+            .font(Some(&ui_font))
             .parent(&window)
             .build(&mut stop_button)
             .context("failed to build stop button")?;
@@ -264,6 +310,9 @@ impl App {
             start_button,
             stop_button,
             icon,
+            ui_font,
+            label_font,
+            status_font,
             event_handler: RefCell::new(None),
             worker_stop: RefCell::new(None),
             event_rx: RefCell::new(None),
@@ -490,5 +539,8 @@ impl Drop for App {
         let _ = &self.sim_label;
         let _ = &self.sim_value;
         let _ = &self.icon;
+        let _ = &self.ui_font;
+        let _ = &self.label_font;
+        let _ = &self.status_font;
     }
 }
