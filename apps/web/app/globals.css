@@ -109,6 +109,98 @@ main {
   color: #333333;
 }
 
+.status-panel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.status-panel h2 {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.connection-details {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 12px;
+  color: #333333;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid #000000;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-good {
+  background: #000000;
+  color: #ffffff;
+}
+
+.status-muted {
+  background: #ffffff;
+  color: #666666;
+  border-color: #999999;
+}
+
+.session-list {
+  display: grid;
+  gap: 8px;
+}
+
+.session-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(180px, 0.8fr) minmax(160px, 0.8fr);
+  gap: 16px;
+  align-items: center;
+  border: 1px solid #000000;
+  padding: 14px;
+}
+
+.session-row > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.session-row strong,
+.session-row span {
+  overflow-wrap: anywhere;
+}
+
+.session-row strong {
+  font-size: 16px;
+}
+
+.session-row span {
+  color: #333333;
+  font-size: 13px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #666666;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -122,10 +214,41 @@ main {
 
 .metric strong {
   display: block;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   margin-top: 6px;
   letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e5e5e5;
+  padding: 10px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  color: #666666;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+td {
+  color: #333333;
 }
 
 .token-panel {
@@ -254,5 +377,17 @@ button.secondary:hover {
   .token-row {
     flex-direction: column;
   }
-}
 
+  .status-panel {
+    display: grid;
+  }
+
+  .connection-details {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .session-row {
+    grid-template-columns: 1fr;
+  }
+}
