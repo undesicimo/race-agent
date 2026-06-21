@@ -1,6 +1,8 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
+use chrono::SecondsFormat;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use telemetry_core::{Sim, TelemetryBatch, TelemetryFrame};
 use uuid::Uuid;
 
@@ -26,10 +28,13 @@ pub struct TelemetryUploader {
 
 impl TelemetryUploader {
     pub fn new(config: CollectorConfig) -> Self {
-        Self {
-            client: reqwest::Client::new(),
-            config,
-        }
+        let client = reqwest::Client::builder()
+            .connect_timeout(Duration::from_secs(2))
+            .timeout(Duration::from_secs(5))
+            .build()
+            .expect("failed to build telemetry HTTP client");
+
+        Self { client, config }
     }
 
     pub fn is_enabled(&self) -> bool {
@@ -167,7 +172,7 @@ impl TelemetryUploader {
             sim,
             status,
             message,
-            timestamp: chrono::Utc::now().to_rfc3339(),
+            timestamp: chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true),
         };
 
         self.client

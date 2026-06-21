@@ -85,6 +85,13 @@ pub async fn run(
         }
     };
 
+    if let Err(error) = &result {
+        emit(
+            &event_tx,
+            CollectorEvent::Status(format!("Collector stopped: {error}")),
+        );
+    }
+
     emit(&event_tx, CollectorEvent::Stopped);
     result
 }
@@ -150,7 +157,11 @@ async fn run_acc_service(
             let mut interval = time::interval(HEARTBEAT_INTERVAL);
             loop {
                 select! {
-                    _ = heartbeat_shutdown.changed() => break,
+                    changed = heartbeat_shutdown.changed() => {
+                        if changed.is_err() || is_shutdown(&heartbeat_shutdown) {
+                            break;
+                        }
+                    }
                     _ = interval.tick() => {
                         if let Err(error) = heartbeat_uploader.send_heartbeat(sim, "uploading", None).await {
                             emit(
@@ -243,9 +254,11 @@ async fn collect_loop(
 
     let outcome = loop {
         select! {
-            _ = shutdown_rx.changed() => {
-                emit(event_tx, CollectorEvent::Status("Stopping collector...".to_string()));
-                break LoopOutcome::StopRequested;
+            changed = shutdown_rx.changed() => {
+                if changed.is_err() || is_shutdown(shutdown_rx) {
+                    emit(event_tx, CollectorEvent::Status("Stopping collector...".to_string()));
+                    break LoopOutcome::StopRequested;
+                }
             }
             _ = poll_interval.tick() => {
                 match reader.read_frame() {
@@ -322,9 +335,15 @@ async fn sleep_or_shutdown(shutdown_rx: &mut watch::Receiver<bool>, duration: Du
         return true;
     }
 
-    select! {
-        _ = shutdown_rx.changed() => true,
-        _ = time::sleep(duration) => false,
+    loop {
+        select! {
+            changed = shutdown_rx.changed() => {
+                if changed.is_err() || is_shutdown(shutdown_rx) {
+                    return true;
+                }
+            }
+            _ = time::sleep(duration) => return false,
+        }
     }
 }
 

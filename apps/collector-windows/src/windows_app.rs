@@ -3,14 +3,23 @@ use crate::windows_config::AppConfig;
 use anyhow::{Context, Result};
 use native_windows_gui as nwg;
 use std::cell::RefCell;
+use std::env;
+use std::fs::OpenOptions;
+use std::io::Write;
+use std::path::PathBuf;
 use std::rc::Rc;
-use std::sync::mpsc::{self, Receiver};
+use std::sync::{
+    mpsc::{self, Receiver},
+    Mutex,
+};
 use std::thread;
+use std::time::{SystemTime, UNIX_EPOCH};
 use telemetry_core::Sim;
 use tokio::runtime::Runtime;
 use tokio::sync::watch;
 
 const APP_ICON: &[u8] = include_bytes!("../assets/icon.ico");
+static LOG_LOCK: Mutex<()> = Mutex::new(());
 
 pub struct LaunchOverrides {
     pub server: Option<String>,
@@ -42,13 +51,14 @@ struct App {
     ui_font: nwg::Font,
     label_font: nwg::Font,
     status_font: nwg::Font,
-    event_handler: RefCell<Option<nwg::EventHandler>>,
+    event_handlers: RefCell<Vec<nwg::EventHandler>>,
     worker_stop: RefCell<Option<watch::Sender<bool>>>,
     event_rx: RefCell<Option<Receiver<CollectorEvent>>>,
     running: RefCell<bool>,
 }
 
 pub fn run(overrides: LaunchOverrides) -> Result<()> {
+    debug_log("collector app starting");
     nwg::init().context("failed to initialize native-windows-gui")?;
     nwg::Font::set_global_family("Segoe UI").context("failed to set default font")?;
 
@@ -143,7 +153,7 @@ impl App {
 
         nwg::Menu::builder()
             .popup(true)
-            .parent(&window)
+            .parent(&shell)
             .build(&mut tray_menu)
             .context("failed to build tray menu")?;
 
@@ -313,7 +323,7 @@ impl App {
             ui_font,
             label_font,
             status_font,
-            event_handler: RefCell::new(None),
+            event_handlers: RefCell::new(Vec::new()),
             worker_stop: RefCell::new(None),
             event_rx: RefCell::new(None),
             running: RefCell::new(false),
@@ -325,64 +335,81 @@ impl App {
     }
 
     fn bind_events(self: &Rc<Self>) {
-        let app = Rc::clone(self);
+        let window_app = Rc::clone(self);
+        let window_handler =
+            nwg::full_bind_event_handler(&self.window.handle, move |event, _, handle| {
+                window_app.handle_event(event, handle);
+            });
 
-        let handler = nwg::full_bind_event_handler(&self.window.handle, move |event, _, handle| {
-            if handle == app.window.handle {
-                match event {
-                    nwg::Event::OnWindowClose => {
-                        app.window.set_visible(false);
-                    }
-                    nwg::Event::OnNotice => {
-                        app.drain_worker_events();
-                    }
-                    _ => {}
+        let shell_app = Rc::clone(self);
+        let shell_handler =
+            nwg::full_bind_event_handler(&self._shell.handle, move |event, _, handle| {
+                shell_app.handle_event(event, handle);
+            });
+
+        self.event_handlers
+            .borrow_mut()
+            .extend([window_handler, shell_handler]);
+    }
+
+    fn handle_event(&self, event: nwg::Event, handle: nwg::ControlHandle) {
+        if handle == self.window.handle {
+            match event {
+                nwg::Event::OnWindowClose => {
+                    self.window.set_visible(false);
                 }
+                _ => {}
             }
+        }
 
-            if handle == app.save_button.handle && event == nwg::Event::OnButtonClick {
-                app.save_config();
-            }
+        if handle == self.notice.handle && event == nwg::Event::OnNotice {
+            debug_log("notice received; draining worker events");
+            self.drain_worker_events();
+        }
 
-            if handle == app.start_button.handle && event == nwg::Event::OnButtonClick {
-                app.start_collector();
-            }
+        if handle == self.save_button.handle && event == nwg::Event::OnButtonClick {
+            self.save_config();
+        }
 
-            if handle == app.stop_button.handle && event == nwg::Event::OnButtonClick {
-                app.stop_collector();
-            }
+        if handle == self.start_button.handle && event == nwg::Event::OnButtonClick {
+            self.start_collector();
+        }
 
-            if handle == app.tray.handle && event == nwg::Event::OnContextMenu {
-                let (_, y) = nwg::GlobalCursor::position();
-                let (x, _) = nwg::GlobalCursor::position();
-                app.tray_menu.popup(x, y);
-            }
+        if handle == self.stop_button.handle && event == nwg::Event::OnButtonClick {
+            self.stop_collector();
+        }
 
-            if handle == app.tray_open_item.handle && event == nwg::Event::OnMenuItemSelected {
-                app.show_window();
-            }
+        if handle == self.tray.handle && event == nwg::Event::OnContextMenu {
+            self.show_tray_menu();
+        }
 
-            if handle == app.tray_start_item.handle && event == nwg::Event::OnMenuItemSelected {
-                app.start_collector();
-            }
+        if handle == self.tray_open_item.handle && event == nwg::Event::OnMenuItemSelected {
+            self.show_window();
+        }
 
-            if handle == app.tray_stop_item.handle && event == nwg::Event::OnMenuItemSelected {
-                app.stop_collector();
-            }
+        if handle == self.tray_start_item.handle && event == nwg::Event::OnMenuItemSelected {
+            self.start_collector();
+        }
 
-            if handle == app.tray_quit_item.handle && event == nwg::Event::OnMenuItemSelected {
-                app.stop_collector();
-                nwg::stop_thread_dispatch();
-            }
-        });
+        if handle == self.tray_stop_item.handle && event == nwg::Event::OnMenuItemSelected {
+            self.stop_collector();
+        }
 
-        *self.event_handler.borrow_mut() = Some(handler);
+        if handle == self.tray_quit_item.handle && event == nwg::Event::OnMenuItemSelected {
+            self.stop_collector();
+            nwg::stop_thread_dispatch();
+        }
     }
 
     fn show_window(&self) {
         self.window.set_visible(true);
         self.window.restore();
         self.window.set_focus();
+    }
+
+    fn show_tray_menu(&self) {
+        let (x, y) = nwg::GlobalCursor::position();
+        self.tray_menu.popup(x, y);
     }
 
     fn save_config(&self) {
@@ -401,6 +428,7 @@ impl App {
 
     fn start_collector(&self) {
         if *self.running.borrow() {
+            debug_log("start ignored; collector is already marked running");
             return;
         }
 
@@ -416,25 +444,43 @@ impl App {
             return;
         }
 
-        let (event_tx, event_rx) = mpsc::channel();
+        let (service_event_tx, service_event_rx) = mpsc::channel();
+        let (ui_event_tx, ui_event_rx) = mpsc::channel();
         let (stop_tx, stop_rx) = watch::channel(false);
         let notice = self.notice.sender();
 
         *self.worker_stop.borrow_mut() = Some(stop_tx);
-        *self.event_rx.borrow_mut() = Some(event_rx);
+        *self.event_rx.borrow_mut() = Some(ui_event_rx);
         *self.running.borrow_mut() = true;
         self.update_controls();
         self.set_status("Starting collector...");
+        debug_log("collector worker threads starting");
 
         thread::spawn(move || {
+            while let Ok(event) = service_event_rx.recv() {
+                let stopped = matches!(event, CollectorEvent::Stopped);
+                debug_log(&format!("forwarding worker event: {event:?}"));
+                if ui_event_tx.send(event).is_err() {
+                    debug_log("UI event receiver closed; stopping forwarder");
+                    break;
+                }
+                notice.notice();
+                if stopped {
+                    break;
+                }
+            }
+        });
+
+        thread::spawn(move || {
+            debug_log("collector service thread started");
             let runtime = match Runtime::new() {
                 Ok(runtime) => runtime,
                 Err(error) => {
-                    let _ = event_tx.send(CollectorEvent::Status(format!(
+                    debug_log(&format!("failed to start tokio runtime: {error}"));
+                    let _ = service_event_tx.send(CollectorEvent::Status(format!(
                         "Failed to start runtime: {error}"
                     )));
-                    let _ = event_tx.send(CollectorEvent::Stopped);
-                    notice.notice();
+                    let _ = service_event_tx.send(CollectorEvent::Stopped);
                     return;
                 }
             };
@@ -444,28 +490,26 @@ impl App {
                 token: config.token,
                 sim: config.sim,
             };
-
-            let result = runtime.block_on(collector_service::run(
-                service_config,
-                event_tx.clone(),
-                stop_rx,
+            debug_log(&format!(
+                "collector service running for {}",
+                service_config.server
             ));
 
-            if let Err(error) = result {
-                let _ = event_tx.send(CollectorEvent::Status(format!(
-                    "Collector stopped: {error}"
-                )));
-            }
-
-            let _ = event_tx.send(CollectorEvent::Stopped);
-            notice.notice();
+            let _ = runtime.block_on(collector_service::run(
+                service_config,
+                service_event_tx,
+                stop_rx,
+            ));
         });
     }
 
     fn stop_collector(&self) {
         if let Some(stop_tx) = self.worker_stop.borrow_mut().take() {
+            debug_log("stop requested");
             let _ = stop_tx.send(true);
             self.set_status("Stopping collector...");
+        } else {
+            debug_log("stop requested with no worker stop sender");
         }
         self.update_controls();
     }
@@ -475,6 +519,7 @@ impl App {
 
         if let Some(rx) = self.event_rx.borrow_mut().as_mut() {
             while let Ok(event) = rx.try_recv() {
+                debug_log(&format!("drained UI event: {event:?}"));
                 match event {
                     CollectorEvent::Status(message) => self.set_status(&message),
                     CollectorEvent::Running => {
@@ -497,6 +542,7 @@ impl App {
     }
 
     fn set_status(&self, message: &str) {
+        debug_log(&format!("status: {message}"));
         self.status_label.set_text(message);
         self.tray
             .set_tip(&format!("Race Agent Collector - {message}"));
@@ -525,7 +571,7 @@ impl App {
 
 impl Drop for App {
     fn drop(&mut self) {
-        if let Some(handler) = self.event_handler.borrow_mut().take() {
+        for handler in self.event_handlers.borrow_mut().drain(..) {
             nwg::unbind_event_handler(&handler);
         }
 
@@ -543,4 +589,29 @@ impl Drop for App {
         let _ = &self.label_font;
         let _ = &self.status_font;
     }
+}
+
+fn debug_log(message: &str) {
+    let _guard = LOG_LOCK.lock().ok();
+    let path = debug_log_path();
+    if let Some(parent) = path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_secs())
+        .unwrap_or_default();
+
+    if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(path) {
+        let _ = writeln!(file, "[{timestamp}] {message}");
+    }
+}
+
+fn debug_log_path() -> PathBuf {
+    env::var("APPDATA")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
+        .join("race-agent")
+        .join("collector.log")
 }
