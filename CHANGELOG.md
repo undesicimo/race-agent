@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.0.0](https://github.com/undesicimo/race-agent/compare/v1.0.1...v2.0.0) (2026-06-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* Renames package scopes, app identifiers, and local database defaults from sim-telemetry to race-agent.
+
+### Bug Fixes
+
+* Add app and web logos; set Windows app icon ([10a127d](https://github.com/undesicimo/race-agent/commit/10a127d191282a6d92deb3c40adad39ea74a6e9d))
+* **commitlint:** allow long body and footer lines ([d731d45](https://github.com/undesicimo/race-agent/commit/d731d454dabcff518a93a85983caa961cc207d93))
+* **commitlint:** disable body and footer line-length limits ([3f55c29](https://github.com/undesicimo/race-agent/commit/3f55c291a3163198703117cc68b3f6629f65ea8d))
+* rename sim-telemetry to race-agent ([8c16293](https://github.com/undesicimo/race-agent/commit/8c16293508691185dd3513cbd7b673a4afa1c0f8))
+* Revamp UI styles and dashboard layout ([542bb00](https://github.com/undesicimo/race-agent/commit/542bb0081217d23b491523075977719522a272f5))
+
 ## [1.0.1](https://github.com/undesicimo/race-agent/compare/v1.0.0...v1.0.1) (2026-06-20)
 
 
