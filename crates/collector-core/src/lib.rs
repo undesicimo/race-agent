@@ -38,7 +38,7 @@ impl TelemetryUploader {
     }
 
     pub fn is_enabled(&self) -> bool {
-        !self.config.server.trim().is_empty() && !self.config.token.trim().is_empty()
+        !self.config.server.trim().is_empty()
     }
 
     pub async fn upload_batch(&self, samples: Vec<TelemetryFrame>) -> Result<()> {
@@ -61,7 +61,6 @@ impl TelemetryUploader {
                 "{}/api/ingest/telemetry/batch",
                 self.config.server.trim_end_matches('/')
             ))
-            .bearer_auth(&self.config.token)
             .json(&batch)
             .send()
             .await?

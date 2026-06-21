@@ -32,7 +32,7 @@ export const TelemetrySampleSchema = z.object({
 
 export const TelemetryBatchSchema = z.object({
   sim: SimSchema,
-  sessionId: z.string().uuid(),
+  sessionId: z.string().uuid().optional(),
   collectorId: z.string().uuid().optional(),
   samples: z.array(TelemetrySampleSchema).min(1).max(1000)
 });

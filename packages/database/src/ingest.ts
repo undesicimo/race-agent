@@ -95,7 +95,7 @@ export async function endIngestSession(db: Database, payload: SessionEnd) {
 export async function insertTelemetryBatch(db: Database, payload: TelemetryBatch) {
   await db.insert(telemetrySamples).values(
     payload.samples.map((sample) => ({
-      sessionId: payload.sessionId,
+      sessionId: payload.sessionId ?? null,
       recordedAt: new Date(sample.timestamp),
       speedKph: sample.speedKph,
       rpm: sample.rpm,

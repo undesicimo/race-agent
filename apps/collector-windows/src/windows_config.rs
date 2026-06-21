@@ -23,7 +23,7 @@ impl Default for AppConfig {
 
 impl AppConfig {
     pub fn is_ready(&self) -> bool {
-        !self.server.trim().is_empty() && !self.token.trim().is_empty()
+        !self.server.trim().is_empty()
     }
 
     pub fn load() -> Result<Self> {

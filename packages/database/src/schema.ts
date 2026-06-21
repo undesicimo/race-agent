@@ -96,7 +96,7 @@ export const telemetrySamples = pgTable(
   "telemetry_samples",
   {
     id: uuid("id").defaultRandom().notNull(),
-    sessionId: uuid("session_id").notNull().references(() => sessions.id),
+    sessionId: uuid("session_id"),
     lapId: uuid("lap_id").references(() => laps.id),
     recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull(),
     speedKph: doublePrecision("speed_kph"),

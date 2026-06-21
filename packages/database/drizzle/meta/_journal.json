@@ -15,6 +15,13 @@
       "when": 1781931509275,
       "tag": "0001_timescale_telemetry_samples",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782050400000,
+      "tag": "0002_sessionless_telemetry",
+      "breakpoints": true
     }
   ]
 }

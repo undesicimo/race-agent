@@ -10,8 +10,6 @@ use uuid::Uuid;
 const BATCH_SIZE: usize = 50;
 /// Maximum time between uploads (even if batch is not full).
 const FLUSH_INTERVAL: Duration = Duration::from_millis(500);
-/// How often to send a heartbeat to the server.
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 /// How often to poll the shared-memory regions (~60 Hz).
 const POLL_INTERVAL: Duration = Duration::from_millis(16);
 /// How long to wait between retries while ACC is not running.
@@ -59,8 +57,7 @@ pub async fn run(
         emit(
             &event_tx,
             CollectorEvent::Status(
-                "Local mode: no server/token configured; telemetry will not be uploaded."
-                    .to_string(),
+                "Local mode: no server configured; telemetry will not be uploaded.".to_string(),
             ),
         );
     }
@@ -69,8 +66,6 @@ pub async fn run(
         Sim::Acc => {
             run_acc_service(
                 uploader,
-                config.sim,
-                uploads_enabled,
                 event_tx.clone(),
                 shutdown_rx,
             )
@@ -98,8 +93,6 @@ pub async fn run(
 
 async fn run_acc_service(
     uploader: TelemetryUploader,
-    sim: Sim,
-    uploads_enabled: bool,
     event_tx: Sender<CollectorEvent>,
     mut shutdown_rx: watch::Receiver<bool>,
 ) -> Result<()> {
@@ -114,87 +107,12 @@ async fn run_acc_service(
             None => break,
         };
 
-        let (car_name, track_name) = {
-            let frame = reader.read_frame().ok().flatten();
-            let car = frame
-                .as_ref()
-                .map(|f| f.car_model.clone())
-                .filter(|s| !s.is_empty());
-            let track = frame
-                .as_ref()
-                .map(|f| f.track_name.clone())
-                .filter(|s| !s.is_empty());
-            (car, track)
-        };
+        emit(
+            &event_tx,
+            CollectorEvent::Status("Collecting ACC telemetry.".to_string()),
+        );
 
-        let session_id = match uploader.start_session(sim, car_name, track_name).await {
-            Ok(id) => {
-                let status = if uploads_enabled {
-                    format!("Session started: {id}")
-                } else {
-                    format!("Local session started: {id}")
-                };
-                emit(&event_tx, CollectorEvent::Status(status));
-                id
-            }
-            Err(error) => {
-                emit(
-                    &event_tx,
-                    CollectorEvent::Status(format!(
-                        "Session start failed ({error}); collecting locally."
-                    )),
-                );
-                Uuid::new_v4()
-            }
-        };
-
-        let session_uploader = uploader.clone().with_session_id(session_id);
-        let heartbeat_uploader = session_uploader.clone();
-        let heartbeat_events = event_tx.clone();
-        let mut heartbeat_shutdown = shutdown_rx.clone();
-
-        let heartbeat = tokio::spawn(async move {
-            let mut interval = time::interval(HEARTBEAT_INTERVAL);
-            loop {
-                select! {
-                    changed = heartbeat_shutdown.changed() => {
-                        if changed.is_err() || is_shutdown(&heartbeat_shutdown) {
-                            break;
-                        }
-                    }
-                    _ = interval.tick() => {
-                        if let Err(error) = heartbeat_uploader.send_heartbeat(sim, "uploading", None).await {
-                            emit(
-                                &heartbeat_events,
-                                CollectorEvent::Status(format!("Heartbeat failed: {error}")),
-                            );
-                        }
-                    }
-                }
-            }
-        });
-
-        let outcome =
-            collect_loop(&mut reader, &session_uploader, &event_tx, &mut shutdown_rx).await;
-
-        heartbeat.abort();
-
-        if let Err(error) = session_uploader.end_session(session_id).await {
-            emit(
-                &event_tx,
-                CollectorEvent::Status(format!("Failed to end session: {error}")),
-            );
-        } else if uploads_enabled {
-            emit(
-                &event_tx,
-                CollectorEvent::Status(format!("Session ended: {session_id}")),
-            );
-        } else {
-            emit(
-                &event_tx,
-                CollectorEvent::Status(format!("Local session ended: {session_id}")),
-            );
-        }
+        let outcome = collect_loop(&mut reader, &uploader, &event_tx, &mut shutdown_rx).await;
 
         match outcome {
             LoopOutcome::StopRequested => break,

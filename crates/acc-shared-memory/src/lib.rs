@@ -33,7 +33,7 @@ pub struct PageFilePhysics {
     pub packet_id: i32,
     pub gas: f32,
     pub brake: f32,
-    /// Fuel remaining in kg.
+    /// Fuel remaining in litres.
     pub fuel: f32,
     /// 0 = reverse, 1 = neutral, 2 = 1st gear, …
     pub gear: i32,
@@ -104,19 +104,6 @@ pub struct PageFilePhysics {
     pub abs_in_action: i32,
     pub suspension_damage: [f32; 4],
     pub tyre_temp: [f32; 4],
-    pub water_temp: f32,
-    pub brake_pressure: [f32; 4],
-    pub front_brake_compound: i32,
-    pub rear_brake_compound: i32,
-    pub pad_life: [f32; 4],
-    pub disc_life: [f32; 4],
-    pub ignition_on: i32,
-    pub starter_engine_on: i32,
-    pub is_engine_running: i32,
-    pub kerb_vibration: f32,
-    pub slip_vibrations: f32,
-    pub g_vibrations: f32,
-    pub abs_vibrations: f32,
 }
 
 /// Updated at every graphical step (race position, flags, session state).
@@ -167,7 +154,7 @@ pub struct PageFileGraphics {
     pub tc_cut: i32,
     pub engine_map: i32,
     pub abs: i32,
-    pub fuel_used_per_lap: f32,
+    pub fuel_used_per_lap: i32,
     pub rain_lights: i32,
     pub flashing_lights: i32,
     pub lights_stage: i32,
@@ -176,43 +163,6 @@ pub struct PageFileGraphics {
     pub driver_stint_total_time_left: i32,
     pub driver_stint_time_left: i32,
     pub rain_tyres: i32,
-    pub session_index: i32,
-    pub used_fuel: f32,
-    pub delta_lap_time: [u16; 15],
-    pub i_delta_lap_time: i32,
-    pub estimated_lap_time: [u16; 15],
-    pub i_estimated_lap_time: i32,
-    pub is_delta_positive: i32,
-    pub i_split: i32,
-    pub is_valid_lap: i32,
-    pub fuel_estimated_laps: f32,
-    pub track_status: [u16; 33],
-    pub missing_mandatory_pits: i32,
-    pub clock: f32,
-    pub direction_lights_left: i32,
-    pub direction_lights_right: i32,
-    pub global_yellow: i32,
-    pub global_yellow1: i32,
-    pub global_yellow2: i32,
-    pub global_yellow3: i32,
-    pub global_white: i32,
-    pub global_green: i32,
-    pub global_chequered: i32,
-    pub global_red: i32,
-    pub mfd_tyre_set: i32,
-    pub mfd_fuel_to_add: f32,
-    pub mfd_tyre_pressure_lf: f32,
-    pub mfd_tyre_pressure_rf: f32,
-    pub mfd_tyre_pressure_lr: f32,
-    pub mfd_tyre_pressure_rr: f32,
-    pub track_grip_status: i32,
-    pub rain_intensity: i32,
-    pub rain_intensity_in_10m: i32,
-    pub rain_intensity_in_30m: i32,
-    pub current_tyre_set: i32,
-    pub strategy_tyre_set: i32,
-    pub gap_ahead: i32,
-    pub gap_behind: i32,
 }
 
 /// Static data that does not change during a session.
@@ -243,7 +193,7 @@ pub struct PageFileStatic {
     pub aid_fuel_rate: f32,
     pub aid_tyre_rate: f32,
     pub aid_mechanical_damage: f32,
-    pub aid_allow_tyre_blankets: f32,
+    pub aid_allow_tyre_blankets: i32,
     pub aid_stability: f32,
     pub aid_auto_clutch: i32,
     pub aid_auto_blip: i32,
@@ -263,8 +213,6 @@ pub struct PageFileStatic {
     pub pit_window_start: i32,
     pub pit_window_end: i32,
     pub is_online: i32,
-    pub dry_tyres_name: [u16; 33],
-    pub wet_tyres_name: [u16; 33],
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -293,8 +241,8 @@ pub struct AccFrame {
     pub lap_time_ms: u32,
     /// 0.0 = start/finish line, 1.0 = finish.
     pub normalized_track_position: f32,
-    /// Fuel remaining in kilograms (ACC native).
-    pub fuel_kg: f32,
+    /// Fuel remaining in litres (ACC native).
+    pub fuel_liters: f32,
     /// Tyre pressures in PSI [FL, FR, RL, RR].
     pub tyre_pressure: [f32; 4],
     /// Tyre core temperatures in °C [FL, FR, RL, RR].
@@ -327,9 +275,6 @@ impl AccFrame {
             8 => vec!["orange".into()],
             _ => vec![],
         };
-
-        // ACC stores fuel in kg; convert to litres (petrol ~0.725 kg/L).
-        let fuel_liters = self.fuel_kg / 0.725;
 
         TelemetryFrame {
             sim: Sim::Acc,
@@ -371,7 +316,7 @@ impl AccFrame {
                 rear_right_temperature_c: Some(self.brake_temp_c[3]),
             }),
             fuel: Some(FuelInfo {
-                liters: Some(fuel_liters),
+                liters: Some(self.fuel_liters),
             }),
             flags,
         }
@@ -531,7 +476,7 @@ mod platform {
             steering: phys.steer_angle,
             lap_time_ms: gfx.i_current_time.max(0) as u32,
             normalized_track_position: gfx.normalized_car_position.clamp(0.0, 1.0),
-            fuel_kg: phys.fuel,
+            fuel_liters: phys.fuel,
             tyre_pressure: phys.wheels_pressure,
             tyre_temp_c: phys.tyre_core_temperature,
             brake_temp_c: phys.brake_temp,
@@ -558,5 +503,17 @@ mod platform {
 
     pub fn read_frame(_: &mut AccInner) -> Result<Option<AccFrame>, AccSharedMemoryError> {
         Err(AccSharedMemoryError::UnsupportedPlatform)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{PageFileGraphics, PageFilePhysics, PageFileStatic};
+
+    #[test]
+    fn page_struct_sizes_match_acc_sdk_header() {
+        assert_eq!(std::mem::size_of::<PageFilePhysics>(), 712);
+        assert_eq!(std::mem::size_of::<PageFileGraphics>(), 1320);
+        assert_eq!(std::mem::size_of::<PageFileStatic>(), 688);
     }
 }

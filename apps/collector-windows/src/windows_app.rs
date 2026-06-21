@@ -81,7 +81,7 @@ pub fn run(overrides: LaunchOverrides) -> Result<()> {
     if config_ready {
         app.start_collector();
     } else {
-        app.set_status("Enter the server endpoint and token, then click Save or Start.");
+        app.set_status("Enter the server endpoint, then click Save or Start.");
     }
 
     nwg::dispatch_thread_events();
@@ -228,7 +228,7 @@ impl App {
 
         nwg::TextInput::builder()
             .text(&config.token)
-            .placeholder_text(Some("Paste ingest token"))
+            .placeholder_text(Some("Optional"))
             .position((148, 78))
             .size((330, 34))
             .password(Some('*'))
@@ -416,7 +416,7 @@ impl App {
         let config = self.current_config();
         if !config.is_ready() {
             self.show_window();
-            self.set_status("Server endpoint and token are required.");
+            self.set_status("Server endpoint is required.");
             return;
         }
 
@@ -435,7 +435,7 @@ impl App {
         let config = self.current_config();
         if !config.is_ready() {
             self.show_window();
-            self.set_status("Server endpoint and token are required before starting.");
+            self.set_status("Server endpoint is required before starting.");
             return;
         }
 
